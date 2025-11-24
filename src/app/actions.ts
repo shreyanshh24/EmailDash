@@ -2,7 +2,7 @@
 
 import { createCalendarEvent } from "@/lib/calendar";
 import { generateQuickReplies } from "@/lib/gemini";
-import { getEmail, listEmails, scanEmailsForSubscriptions, sendEmail } from "@/lib/gmail";
+import { getEmail, listEmails, markAsRead, scanEmailsForSubscriptions, sendEmail } from "@/lib/gmail";
 import { Email } from "@/types";
 
 export async function fetchEmails(accessToken: string, pageToken?: string, query: string = "") {
@@ -68,6 +68,16 @@ export async function sendEmailAction(accessToken: string, to: string, subject: 
     } catch (error) {
         console.error("Failed to send email:", error);
         return { success: false, error: "Failed to send email" };
+    }
+}
+
+export async function markAsReadAction(accessToken: string, messageId: string) {
+    try {
+        await markAsRead(accessToken, messageId);
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to mark email as read:", error);
+        return { success: false, error: "Failed to mark email as read" };
     }
 }
 

@@ -1,13 +1,13 @@
 "use client";
 
-import { fetchEmails } from "@/app/actions";
+import { fetchEmails, markAsReadAction } from "@/app/actions";
 import { Chatbot } from "@/components/email/Chatbot";
 import { EmailList } from "@/components/email/EmailList";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getAllUniqueTags, getTagForEmail } from "@/lib/tags";
 import { Email } from "@/types";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, RefreshCcw } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { EmailReadingPane } from "./EmailReadingPane";
@@ -65,6 +65,44 @@ export function DashboardClient({ initialEmails, initialNextPageToken }: Dashboa
         }
     };
 
+    const refreshEmails = async () => {
+        // @ts-ignore
+        const accessToken = session?.accessToken;
+        if (!accessToken) return;
+
+        setLoading(true);
+        try {
+            let query = "";
+            if (activeTab === "unread") query = "is:unread";
+            if (activeTab === "starred") query = "is:starred";
+
+            const res = await fetchEmails(accessToken, undefined, query);
+            setEmails(res.emails);
+            setNextPageToken(res.nextPageToken || undefined);
+        } catch (error) {
+            console.error("Failed to refresh emails:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleEmailSelect = async (email: Email) => {
+        setSelectedEmail(email);
+
+        if (!email.isRead) {
+            // Optimistically update UI
+            setEmails(prev => prev.map(e =>
+                e.id === email.id ? { ...e, isRead: true } : e
+            ));
+
+            // @ts-ignore
+            const accessToken = session?.accessToken;
+            if (accessToken) {
+                await markAsReadAction(accessToken, email.id);
+            }
+        }
+    };
+
     const handleTabChange = async (value: string) => {
         setActiveTab(value);
         setTagFilter(null); // Reset tag filter when changing tabs
@@ -101,7 +139,18 @@ export function DashboardClient({ initialEmails, initialNextPageToken }: Dashboa
             <div className={`lg:col-span-5 xl:col-span-4 flex flex-col rounded-xl border bg-card text-card-foreground shadow overflow-hidden ${selectedEmail ? 'hidden lg:flex' : 'flex'}`}>
                 <div className="p-4 border-b border-border bg-muted/40 space-y-4">
                     <div className="flex items-center justify-between">
-                        <h3 className="font-semibold leading-none tracking-tight">Inbox</h3>
+                        <div className="flex items-center gap-2">
+                            <h3 className="font-semibold leading-none tracking-tight">Inbox</h3>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={refreshEmails}
+                                disabled={loading}
+                            >
+                                <RefreshCcw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+                            </Button>
+                        </div>
                         <span className="text-xs text-muted-foreground">{filteredEmails.length} messages</span>
                     </div>
                     <Tabs defaultValue="all" value={activeTab} onValueChange={handleTabChange} className="w-full">
@@ -140,7 +189,7 @@ export function DashboardClient({ initialEmails, initialNextPageToken }: Dashboa
                 <div className="flex-1 overflow-y-auto">
                     <EmailList
                         emails={filteredEmails}
-                        onSelect={setSelectedEmail}
+                        onSelect={handleEmailSelect}
                         selectedId={selectedEmail?.id}
                     />
                     {nextPageToken && !tagFilter && (

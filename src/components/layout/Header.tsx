@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { Bell, LogOut, Search, Settings, User } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
@@ -66,8 +67,7 @@ export function Header() {
                             </div>
                         </PopoverContent>
                     </Popover>
-                    {/* Uncomment and import ThemeToggle if needed */}
-                    {/* <ThemeToggle /> */}
+                    <ThemeToggle />
                 </div>
 
                 <div className="relative">
@@ -90,7 +90,9 @@ export function Header() {
                             />
                             <div className="absolute right-0 mt-2 w-56 rounded-md border bg-popover p-1 text-popover-foreground shadow-md z-50 animate-in fade-in-0 zoom-in-95">
                                 <div className="px-2 py-1.5 text-sm font-semibold">
-                                    {session?.user?.name || "My Account"}
+                                    <Link href="/settings" onClick={() => setIsProfileOpen(false)} className="hover:underline">
+                                        {session?.user?.name || "My Account"}
+                                    </Link>
                                     <div className="text-xs font-normal text-muted-foreground truncate">
                                         {session?.user?.email}
                                     </div>

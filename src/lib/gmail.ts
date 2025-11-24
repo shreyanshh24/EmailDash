@@ -39,6 +39,17 @@ export async function trashEmail(accessToken: string, messageId: string) {
   });
 }
 
+export async function markAsRead(accessToken: string, messageId: string) {
+  const gmail = getGmailClient(accessToken);
+  await gmail.users.messages.batchModify({
+    userId: "me",
+    requestBody: {
+      ids: [messageId],
+      removeLabelIds: ["UNREAD"],
+    },
+  });
+}
+
 export async function sendEmail(accessToken: string, to: string, subject: string, body: string, replyToId?: string) {
   const gmail = getGmailClient(accessToken);
 

@@ -1,23 +1,28 @@
 import { UnsubscribePanel } from "@/components/email/UnsubscribePanel";
 import { PrivacyFilters } from "@/components/settings/PrivacyFilters";
+import { ProfileSection } from "@/components/settings/ProfileSection";
 import { PromptBrain } from "@/components/settings/PromptBrain";
 
 export default function SettingsPage() {
     return (
         <div className="space-y-8">
             <div className="flex items-center justify-between">
-                <h2 className="text-3xl font-bold tracking-tight">Settings</h2>
+                <h2 className="text-3xl font-bold tracking-tight">My Account</h2>
             </div>
 
-            <div className="grid gap-8 md:grid-cols-2">
-                <div className="space-y-8">
+            <div className="grid gap-8 md:grid-cols-12">
+                {/* Left Column: Profile */}
+                <div className="md:col-span-4 lg:col-span-3 space-y-8">
+                    <ProfileSection />
+                </div>
+
+                {/* Right Column: Settings */}
+                <div className="md:col-span-8 lg:col-span-9 space-y-8">
                     <section>
                         <h3 className="text-lg font-medium mb-4">Subscriptions</h3>
                         <UnsubscribePanel />
                     </section>
-                </div>
 
-                <div className="space-y-8">
                     <section>
                         <h3 className="text-lg font-medium mb-4">Privacy & AI</h3>
                         <PrivacyFilters />
