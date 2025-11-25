@@ -1,5 +1,6 @@
 import { fetchEmails } from "@/app/actions";
 import { DashboardClient } from "@/components/dashboard/DashboardClient";
+import { DashboardGreeting } from "@/components/dashboard/DashboardGreeting";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { authOptions } from "@/lib/auth";
 import { Email } from "@/types";
@@ -32,12 +33,7 @@ export default async function Home() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-          <p className="text-muted-foreground">
-            Welcome back, {session?.user?.name}
-          </p>
-        </div>
+        <DashboardGreeting />
       </div>
 
       <StatsCards unreadCount={emails.filter(e => !e.isRead).length} />

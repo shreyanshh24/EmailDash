@@ -7,9 +7,11 @@ import { Bell, LogOut, Search, Settings, User } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useState } from "react";
+import { useUserProfile } from "@/hooks/use-user-profile";
 
 export function Header() {
     const { data: session } = useSession();
+    const { name } = useUserProfile();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     return (
@@ -91,7 +93,7 @@ export function Header() {
                             <div className="absolute right-0 mt-2 w-56 rounded-md border bg-popover p-1 text-popover-foreground shadow-md z-50 animate-in fade-in-0 zoom-in-95">
                                 <div className="px-2 py-1.5 text-sm font-semibold">
                                     <Link href="/settings" onClick={() => setIsProfileOpen(false)} className="hover:underline">
-                                        {session?.user?.name || "My Account"}
+                                        {name || "My Account"}
                                     </Link>
                                     <div className="text-xs font-normal text-muted-foreground truncate">
                                         {session?.user?.email}
