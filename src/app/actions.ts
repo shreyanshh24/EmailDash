@@ -1,7 +1,7 @@
 "use server";
 
 import { createCalendarEvent } from "@/lib/calendar";
-import { generateQuickReplies } from "@/lib/gemini";
+import { detectReminders, generateQuickReplies } from "@/lib/gemini";
 import { getEmail, listEmails, markAsRead, scanEmailsForSubscriptions, sendEmail } from "@/lib/gmail";
 import { Email } from "@/types";
 
@@ -102,5 +102,15 @@ export async function addToCalendarAction(accessToken: string, title: string, da
     } catch (error) {
         console.error("Failed to add to calendar:", error);
         return { success: false, error: "Failed to add to calendar" };
+    }
+}
+
+export async function detectRemindersAction(content: string) {
+    try {
+        const reminders = await detectReminders(content);
+        return { success: true, reminders };
+    } catch (error) {
+        console.error("Failed to detect reminders:", error);
+        return { success: false, error: "Failed to detect reminders" };
     }
 }

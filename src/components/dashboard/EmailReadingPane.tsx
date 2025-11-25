@@ -1,5 +1,6 @@
 import { getQuickRepliesAction, sendEmailAction } from "@/app/actions";
 import { ReminderReviewModal } from "@/components/email/ReminderReviewModal";
+import { SmartActionDialog } from "@/components/email/SmartActionDialog";
 import { Button } from "@/components/ui/button";
 import { getCachedAnalysis, saveCachedAnalysis } from "@/lib/aiCache";
 import { categorizeEmail, detectReminders, summarizeEmail } from "@/lib/gemini";
@@ -22,6 +23,7 @@ export function EmailReadingPane({ email }: EmailReadingPaneProps) {
     const { data: session } = useSession();
     const [isCheckingReminders, setIsCheckingReminders] = useState(false);
     const [reminderModalOpen, setReminderModalOpen] = useState(false);
+    const [smartActionOpen, setSmartActionOpen] = useState(false);
     const [detectedReminders, setDetectedReminders] = useState<{ text: string; date?: string }[]>([]);
 
     // Reply State
@@ -242,6 +244,15 @@ export function EmailReadingPane({ email }: EmailReadingPaneProps) {
                         <Button
                             variant="outline"
                             size="sm"
+                            onClick={() => setSmartActionOpen(true)}
+                            title="Smart Actions"
+                        >
+                            <Sparkles className="h-4 w-4 mr-2 text-yellow-500" />
+                            Smart Actions
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
                             onClick={handleSummarize}
                             disabled={summarizing}
                         >
@@ -320,6 +331,11 @@ export function EmailReadingPane({ email }: EmailReadingPaneProps) {
                 onClose={() => setReminderModalOpen(false)}
                 reminders={detectedReminders}
                 emailId={email.id}
+            />
+            <SmartActionDialog
+                email={email}
+                isOpen={smartActionOpen}
+                onClose={() => setSmartActionOpen(false)}
             />
         </div >
     );

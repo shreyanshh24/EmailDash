@@ -1,10 +1,11 @@
-"use client";
-
+import { SmartActionDialog } from "@/components/email/SmartActionDialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { getTags } from "@/lib/tags";
 import { cn } from "@/lib/utils";
 import { Email } from "@/types";
 import { Archive, MoreVertical, Star, Trash2 } from "lucide-react";
+import { Sparkles } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
 interface EmailListProps {
@@ -14,8 +15,10 @@ interface EmailListProps {
 }
 
 export function EmailList({ emails, onSelect, selectedId }: EmailListProps) {
+    const { data: session } = useSession();
     const [selectedEmails, setSelectedEmails] = useState<Set<string>>(new Set());
     const [tags, setTags] = useState<Record<string, string>>({});
+    const [smartActionEmail, setSmartActionEmail] = useState<Email | null>(null);
 
     useEffect(() => {
         setTags(getTags());
@@ -108,6 +111,16 @@ export function EmailList({ emails, onSelect, selectedId }: EmailListProps) {
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
+                                        setSmartActionEmail(email);
+                                    }}
+                                    className="text-xs bg-yellow-500/10 text-yellow-600 px-2 py-1 rounded hover:bg-yellow-500/20 flex items-center gap-1"
+                                    title="Smart Actions"
+                                >
+                                    <Sparkles className="h-3 w-3" />
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
                                         window.open(`https://mail.google.com/mail/u/0/#inbox/${email.id}?compose=new`, '_blank');
                                     }}
                                     className="text-xs bg-primary/10 text-primary px-2 py-1 rounded hover:bg-primary/20"
@@ -119,6 +132,12 @@ export function EmailList({ emails, onSelect, selectedId }: EmailListProps) {
                     </div>
                 ))}
             </div>
+
+            <SmartActionDialog
+                email={smartActionEmail}
+                isOpen={!!smartActionEmail}
+                onClose={() => setSmartActionEmail(null)}
+            />
         </div>
     );
 }
