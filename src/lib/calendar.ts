@@ -7,7 +7,7 @@ export const getCalendarClient = (accessToken: string) => {
     return google.calendar({ version: "v3", auth });
 };
 
-export async function createCalendarEvent(accessToken: string, title: string, date: string) {
+export async function createCalendarEvent(accessToken: string, title: string, date: string, reminderMinutes: number = 30) {
     const calendar = getCalendarClient(accessToken);
 
     const startDate = new Date(date);
@@ -20,6 +20,12 @@ export async function createCalendarEvent(accessToken: string, title: string, da
         },
         end: {
             dateTime: endDate.toISOString(),
+        },
+        reminders: {
+            useDefault: false,
+            overrides: [
+                { method: 'popup', minutes: reminderMinutes },
+            ],
         },
     };
 

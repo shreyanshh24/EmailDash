@@ -95,9 +95,9 @@ export async function getSubscriptionsAction(accessToken: string) {
     }
 }
 
-export async function addToCalendarAction(accessToken: string, title: string, date: string) {
+export async function addToCalendarAction(accessToken: string, title: string, date: string, reminderMinutes: number = 30) {
     try {
-        const result = await createCalendarEvent(accessToken, title, date);
+        const result = await createCalendarEvent(accessToken, title, date, reminderMinutes);
         return { success: true, link: result.link };
     } catch (error) {
         console.error("Failed to add to calendar:", error);

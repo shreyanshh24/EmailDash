@@ -52,7 +52,10 @@ export function SmartActionDialog({ email, isOpen, onClose }: SmartActionDialogP
             const content = `Subject: ${email.subject}\n\n${email.body || email.snippet}`;
             const res = await detectRemindersAction(content);
             if (res.success && res.reminders) {
-                setReminders(res.reminders);
+                setReminders(res.reminders.map((r: any) => ({
+                    text: r.text,
+                    date: r.date || null
+                })));
             }
         } catch (error) {
             console.error("Error analyzing email:", error);
@@ -62,11 +65,7 @@ export function SmartActionDialog({ email, isOpen, onClose }: SmartActionDialogP
         }
     };
 
-    const calculateReminderTime = (eventDateStr: string | null, offsetMinutes: number) => {
-        if (!eventDateStr) return new Date();
-        const eventDate = new Date(eventDateStr);
-        return new Date(eventDate.getTime() - offsetMinutes * 60000);
-    };
+
 
     const handleAddToCalendar = async (index: number, reminder: ReminderItem) => {
         // @ts-ignore
@@ -82,11 +81,10 @@ export function SmartActionDialog({ email, isOpen, onClose }: SmartActionDialogP
 
             if (editIndex === index) {
                 title = editTitle;
-                dateStr = editDate;
+                // editDate is from datetime-local input (local time), convert to ISO (UTC) for server
+                dateStr = new Date(editDate).toISOString();
             } else if (dateStr) {
-                // Apply offset if not manually editing
-                const reminderTime = calculateReminderTime(dateStr, parseInt(reminderOffset));
-                dateStr = reminderTime.toISOString();
+                // Use detected date directly
             } else {
                 // Fallback if no date detected
                 const tomorrow = new Date();
@@ -95,7 +93,7 @@ export function SmartActionDialog({ email, isOpen, onClose }: SmartActionDialogP
                 dateStr = tomorrow.toISOString();
             }
 
-            const res = await addToCalendarAction(accessToken, title, dateStr!);
+            const res = await addToCalendarAction(accessToken, title, dateStr!, parseInt(reminderOffset));
 
             if (res.success) {
                 alert("Added to calendar successfully!");
@@ -119,9 +117,12 @@ export function SmartActionDialog({ email, isOpen, onClose }: SmartActionDialogP
         setEditTitle(reminder.text);
 
         if (reminder.date) {
-            const reminderTime = calculateReminderTime(reminder.date, parseInt(reminderOffset));
+            const eventDate = new Date(reminder.date);
             // Format for datetime-local input: YYYY-MM-DDTHH:mm
-            setEditDate(reminderTime.toISOString().slice(0, 16));
+            // Adjust for local timezone offset to show correct local time in input
+            const offset = eventDate.getTimezoneOffset() * 60000;
+            const localDate = new Date(eventDate.getTime() - offset);
+            setEditDate(localDate.toISOString().slice(0, 16));
         } else {
             setEditDate("");
         }
